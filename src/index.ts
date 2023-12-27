@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { PrismaClient } from '@prisma/client';
 import express from "express";
 import config from 'config';
@@ -6,16 +7,17 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
+import connectRedis from "./utils/connectRedis";
+
+const app = express();
+app.use(express.json())
+
 
 const prisma = new PrismaClient();
-
 
 const port = config.get<number>('port');
 const origin = config.get<string>('origin');
 
-
-const app = express();
-app.use(express.json())
 
 app.get("/api/users", async (req,res)=>{
     const allusers = await prisma.user.findMany();
@@ -46,4 +48,5 @@ const server = http.createServer(app);
 
 server.listen(port, () => {
     console.log(`Server listening at ${origin}:${port}/`);
+    connectRedis();
 }) 

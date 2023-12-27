@@ -1,22 +1,19 @@
-// Update the logger files to save the logs in the Mongo db
+import logger from "pino";
+import dayjs from "dayjs";
+import config from "config";
 
-import winston, { createLogger, format, transports } from 'winston';
 
-const { combine, timestamp, printf } = format;
+const level = config.get<string>("logLevel");
 
-// Define log format
-const logFormat = printf(({ level, message, timestamp }) => {
-    return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    });
-
-    // Create Winston logger
-    const logger = createLogger({
-        transports: [new transports.Console()],
-        format: format.combine(
-            format.json(),
-            format.timestamp(),
-            format.prettyPrint()
-        )
+const log = logger({
+    transport:{
+        target:'pino-pretty',
+    },
+    level,
+    base:{
+        pid:false,
+    },
+    timestamp: ()=> `"time": "${dayjs().format()}"`
 });
 
-export default logger;
+export default log;
