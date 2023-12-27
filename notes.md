@@ -1,0 +1,1 @@
+npx prisma db push - Ensure that the the db is in syc with the schema.
