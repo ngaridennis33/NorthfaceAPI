@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
 import connectRedis from "./utils/connectRedis";
+import log from "./utils/logger";
 
 const app = express();
 app.use(express.json())
@@ -47,6 +48,6 @@ const server = http.createServer(app);
 
 
 server.listen(port, () => {
-    console.log(`Server listening at ${origin}:${port}/`);
+    log.info(`Server listening at ${origin}:${port}/`);
     connectRedis();
 }) 

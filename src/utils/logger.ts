@@ -6,6 +6,7 @@ import config from "config";
 const level = config.get<string>("logLevel");
 
 const log = logger({
+    // Adjust the pino-pretty
     transport:{
         target:'pino-pretty',
     },
