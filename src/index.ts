@@ -1,3 +1,4 @@
+import { Category } from '@prisma/client';
 require('dotenv').config();
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response } from "express";
@@ -10,6 +11,7 @@ import cors from "cors";
 import connectRedis from "./utils/connectRedis";
 import log from "./utils/logger";
 import productRouter from "./routes/products.routes";
+import CategoryRouter from "./routes/category.routes";
 
 const app = express();
 app.use(express.json())
@@ -35,6 +37,8 @@ app.use(bodyParser.json());
 async function bootstrap(){
     // ROUTES
     app.use('/api/products', productRouter);
+    app.use('/api/products', productRouter);
+    app.use('/api/categories', CategoryRouter);
 
 
 
