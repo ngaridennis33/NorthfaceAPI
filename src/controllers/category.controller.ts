@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createNewCategoryService, getCategoriesService } from "../services/category.service";
+import { createNewCategoryService, getCategoriesService, updateCategoryService } from "../services/category.service";
 
 /**
  * Retrieves all categories from the database.
@@ -51,3 +51,30 @@ export const createNewCategory = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
+
+/**
+ * Edits an existing category based on the data in the request body.
+ * @param req - The incoming request object.
+ * @param res - The outgoing response object.
+ */
+export const editCategory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const catSlug = req.body.slug; // Assuming the category ID is part of the request parameters
+        const { title, desc, img } = req.body;
+
+        // Call the Category service to update the category
+        const updatedCategory = await updateCategoryService.updateCategory(catSlug, {
+            title,
+            desc,
+            img,
+        });
+
+        res.status(200).json(updatedCategory);
+    } catch (error) {
+        console.error('Error updating category:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+

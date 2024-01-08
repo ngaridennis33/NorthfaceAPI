@@ -109,7 +109,6 @@ model Category {
   desc      String // Description of the category
   img       String[] // Array of strings representing image URLs for the category
   products  Product[] // Relationship with the Product model, representing products in this category
-  // productId String // Foreign key linking to the productId field in the Product model
 
   @@map(name: "categories") // Set the database table name to "categories"
 }

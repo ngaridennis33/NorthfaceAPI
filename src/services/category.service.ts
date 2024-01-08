@@ -1,4 +1,3 @@
-import { createNewCategory } from './../controllers/category.controller';
 import { Category, PrismaClient, Product } from "@prisma/client";
 
 // Create a Prisma client instance
@@ -55,6 +54,29 @@ export const createNewCategoryService = {
         } catch (error: any) {
             // Handle errors and throw a meaningful error message
             throw new Error(`Error creating category: ${error.message}`);
+        }
+    },
+};
+
+
+export const updateCategoryService = {
+    /**
+     * Updates an existing category in the database.
+     * @param categoryId - The ID of the category to be updated.
+     * @param updatedCategoryData - The updated data for the category.
+     * @returns A promise that resolves to the updated category.
+     * @throws {Error} Throws an error if there's an issue updating the category.
+     */
+    updateCategory: async (catSlug: string, updatedCategoryData: Partial<Category>): Promise<Category> => {
+        try {
+            const updatedCategory = await prisma.category.update({
+                where: { slug: catSlug },
+                data: updatedCategoryData,
+            });
+
+            return updatedCategory;
+        } catch (error: any) {
+            throw new Error(`Error updating category: ${error.message}`);
         }
     },
 };
