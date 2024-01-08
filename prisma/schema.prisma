@@ -94,8 +94,8 @@ model Product {
   // Timestamps for when the product was created and last updated
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-  catSlug        String // Slug of the category to which the product belongs
-  category       Category    @relation(fields: [catSlug], references: [slug]) // Relationship with the Category model based on the catSlug field
+  category       Category    @relation(fields: [categoryId], references: [id])  // Relationship with the Category model based on the catSlug field
+  categoryId     String
   orders         OrderItem[] // Relationship with the OrderItem model representing orders containing this product
 
   @@map(name: "products") // Set the database table name to "products"
