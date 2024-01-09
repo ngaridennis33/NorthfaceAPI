@@ -1,5 +1,6 @@
+import { Category } from '@prisma/client';
 import { Request, Response } from "express";
-import { createNewCategoryService, getCategoriesService, updateCategoryService } from "../services/category.service";
+import { createNewCategoryService, deleteCategoryService, getCategoriesService, updateCategoryService } from "../services/category.service";
 
 /**
  * Retrieves all categories from the database.
@@ -59,21 +60,50 @@ export const createNewCategory = async (req: Request, res: Response): Promise<vo
  * @param req - The incoming request object.
  * @param res - The outgoing response object.
  */
+interface UpdateCategoryData {
+    title?: string;
+    desc?: string;
+    img?: string[];
+}
 export const editCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const catSlug = req.body.slug; // Assuming the category ID is part of the request parameters
         const { title, desc, img } = req.body;
 
-        // Call the Category service to update the category
-        const updatedCategory = await updateCategoryService.updateCategory(catSlug, {
-            title,
-            desc,
-            img,
-        });
+        // Prepare updated category data with defined fields from the request body
+        const updatedCategoryData: Partial<UpdateCategoryData> = {};
+        if (title !== undefined) updatedCategoryData.title = title;
+        if (desc !== undefined) updatedCategoryData.desc = desc;
+        if (img !== undefined) updatedCategoryData.img = img;
+        
+        const updatedCategory = await updateCategoryService.updateCategory(catSlug,updatedCategoryData);
 
         res.status(200).json(updatedCategory);
     } catch (error) {
         console.error('Error updating category:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+/**
+ * Deletes an existing category based on the categoryId.
+ * @param req - The incoming request object.
+ * @param res - The outgoing response object.
+ */
+export const deleteCategory = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { slug } = req.body;
+
+        // Call the category service to handle the deletion of the category
+        const deletedCategory = await deleteCategoryService.deleteCategory(slug);
+
+        if (deletedCategory) {
+            res.status(200).json({ message: "Category deleted", deletedCategory });
+        } else {
+            res.status(404).json({ error: "Category not found" });
+        }
+    } catch (error) {
+        console.error('Error Deleting category:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };

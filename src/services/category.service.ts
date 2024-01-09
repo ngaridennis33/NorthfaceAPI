@@ -59,6 +59,7 @@ export const createNewCategoryService = {
 };
 
 
+// Service to Update a category
 export const updateCategoryService = {
     /**
      * Updates an existing category in the database.
@@ -77,6 +78,40 @@ export const updateCategoryService = {
             return updatedCategory;
         } catch (error: any) {
             throw new Error(`Error updating category: ${error.message}`);
+        }
+    },
+};
+
+// Service to delete a category
+export const deleteCategoryService = {
+    /**
+     * Deletes a category from the database.
+     * @param catSlug - The unique category slug for the category to be deleted.
+     * @returns A promise that resolves to the deleted category, or null if not found.
+     * @throws {Error} Throws an error if there is an issue deleting the category.
+     */
+    deleteCategory: async (catSlug: string): Promise<Category | null> => {
+        try {
+            // Check if the category exists before attempting to delete
+            const existingCategory = await prisma.category.findUnique({
+                where: { slug: catSlug },
+            });
+
+            if (!existingCategory) {
+                console.log("Category does not exist");
+                return null;
+            }
+
+            // Delete the category
+            const deletedCategory = await prisma.category.delete({
+                where: { slug: catSlug },
+            });
+
+            return deletedCategory;
+        } catch (error: any) {
+            // Handle errors, log them, and rethrow for higher-level handling
+            console.error(`Error deleting category: ${error.message}`);
+            throw new Error(`Error deleting category: ${error.message}`);
         }
     },
 };
