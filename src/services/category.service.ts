@@ -1,7 +1,12 @@
-import { Category, PrismaClient, Product } from "@prisma/client";
+import { Category, PrismaClient } from "@prisma/client";
+import { redisClient } from "../utils/connectRedis";
+
 
 // Create a Prisma client instance
 const prisma = new PrismaClient();
+
+// Initialize your Redis client
+
 
 /**
  * Service responsible for handling category-related operations.
@@ -16,8 +21,20 @@ export const getCategoriesService = {
      */
     getAllCategories: async (): Promise<Category[]> => {
         try {
+
+            // Check if the categories are in the redis cache and return them.
+            const cachedCategories = await redisClient.get('categories');
+            if (cachedCategories) {
+            // Return cached categories if available
+                return JSON.parse(cachedCategories);
+            }
+
             // Fetch all categories from the database
             const categories: Category[] = await prisma.category.findMany();
+
+            // Save the categories in the redis cache.
+            await redisClient.set('categories', JSON.stringify(categories));
+
             return categories;
         } catch (error: any) {
             // Handle errors and throw a meaningful error message
@@ -114,4 +131,18 @@ export const deleteCategoryService = {
             throw new Error(`Error deleting category: ${error.message}`);
         }
     },
+};
+
+export const GetCategoryIdService = {
+getCategoryIdBySlug: async (categorySlug: string): Promise<string | null> => {
+    try {
+    const category = await prisma.category.findUnique({
+        where: { slug: categorySlug },
+    });
+
+    return category?.id || null;
+    } catch (error:any) {
+    throw new Error(`Error fetching category ID: ${error.message}`);
+    }
+},
 };

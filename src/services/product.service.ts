@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * Service responsible for handling product-related operations.
  */
 
-export const GetProductService = {
+export const GetAllProductService = {
     /**
      * Retrieves all products from the database, sorted by creation date in ascending order.
      * @returns A promise that resolves to an array of products.
@@ -18,7 +18,7 @@ export const GetProductService = {
         try {
             const products: Product[] = await prisma.product.findMany({
                 orderBy: {
-                    createdAt: 'asc',
+                    createdAt: 'desc',
                 },
             });
 
@@ -80,3 +80,47 @@ export const CreateNewProductService = {
     }
 };
 
+
+
+
+export const GetSpecificProductService = {
+    /**
+     * Retrieves a specific product from the database based on its ID.
+     * @param productId - The ID of the product to retrieve.
+     * @returns A promise that resolves to the specific product or null if not found.
+     * @throws {Error} Throws an error if there's an issue fetching the product.
+     */
+    getSpecificProduct: async (productId: string): Promise<Product | null> => {
+        try {
+            const product: Product | null = await prisma.product.findUnique({
+                where: { id: productId },
+            });
+
+            return product;
+        } catch (error: any) {
+            throw new Error(`Error fetching specific product: ${error.message}`);
+        }
+    },
+};
+
+export const getCategoryProductService = {
+    /**
+     * Retrieves products belonging to a given category.
+     * @param categoryId - The ID of the category to retrieve products from.
+     * @returns A promise that resolves to an array of products or null if not found.
+     * @throws {Error} Throws an error if there's an issue fetching the products.
+     */
+    getProductFromCategory: async (categoryId: string): Promise<Product[] | null> => {
+        try {
+            // Query the database to fetch products for the specified category.
+            const products: Product[] | null = await prisma.product.findMany({
+                where: { categoryId: categoryId },
+            });
+
+            return products;
+
+        } catch (error: any) {
+            throw new Error(`Error fetching products from the category: ${error.message}`);
+        }
+    },
+};

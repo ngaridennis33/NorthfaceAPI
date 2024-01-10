@@ -54,7 +54,6 @@ export const createNewCategory = async (req: Request, res: Response): Promise<vo
 };
 
 
-
 /**
  * Edits an existing category based on the data in the request body.
  * @param req - The incoming request object.

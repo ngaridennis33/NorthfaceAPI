@@ -56,6 +56,12 @@ async function bootstrap(){
 }
 
 bootstrap()
+.catch((err) => {
+    throw err;
+})
+.finally(async () => {
+    await prisma.$disconnect();
+});
 
 
 
