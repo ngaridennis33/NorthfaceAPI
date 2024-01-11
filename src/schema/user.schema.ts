@@ -2,7 +2,7 @@
 import {object, string, TypeOf, z} from 'zod';
 import { RoleEnumType } from '@prisma/client';
 
-export const createUserSchema = object({
+export const registerUserSchema = object({
     body: object({
         name: string({
             required_error: "Name is required",
@@ -24,3 +24,8 @@ export const createUserSchema = object({
         message: "Passwords DO NOT match",
     })
 })
+
+export type RegisterUserInput = Omit<
+    TypeOf<typeof registerUserSchema>['body'],
+    'passwordConfirm'
+>;
