@@ -3,18 +3,20 @@ import log from "./logger"
 
 const redisUrl = 'redis://localhost:6379';
 
-export const redisClient = createClient({
+const redisClient = createClient({
     url: redisUrl,
 });
 
 const connectRedis = async () => {
     try {
         await redisClient.connect();
+        console.log('Redis client connect successfully');
         log.info('Redis client connected successfully');
     } catch (error) {
         log.info("Error Connecting to Redis", error)
         setTimeout(connectRedis, 5000);
     }
+    connectRedis();
 };
 
-export default connectRedis;
+export default redisClient;

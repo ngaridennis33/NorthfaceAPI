@@ -1,0 +1,1 @@
+import { cleanEnv, port, str } from 'envalid'; //library for validating and accessing environment variables

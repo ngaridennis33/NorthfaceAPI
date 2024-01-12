@@ -12,6 +12,8 @@ import connectRedis from "./utils/connectRedis";
 import log from "./utils/logger";
 import productRouter from "./routes/products.routes";
 import CategoryRouter from "./routes/category.routes";
+import AuthRouter from "./routes/auth.routes";
+import redisClient from './utils/connectRedis';
 
 const app = express();
 app.use(express.json())
@@ -39,6 +41,7 @@ async function bootstrap(){
     app.use('/api/products', productRouter);
     app.use('/api/products', productRouter);
     app.use('/api/categories', CategoryRouter);
+    app.use('/api/auth', AuthRouter);
 
 
 
@@ -51,8 +54,7 @@ async function bootstrap(){
     const server = http.createServer(app);
     server.listen(port, () => {
         log.info(`Server listening at ${origin}:${port}`);
-        connectRedis();
-    }) 
+    });
 }
 
 bootstrap()

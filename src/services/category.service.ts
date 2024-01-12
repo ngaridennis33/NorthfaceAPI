@@ -1,5 +1,5 @@
 import { Category, PrismaClient } from "@prisma/client";
-import { redisClient } from "../utils/connectRedis";
+import redisClient from "../utils/connectRedis";
 
 
 // Create a Prisma client instance

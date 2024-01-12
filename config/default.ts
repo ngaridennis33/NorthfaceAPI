@@ -1,6 +1,8 @@
 export default {
     origin: "http://localhost:",
-    dbUri: "postgresql://admin:password123@localhost:6500/northface?schema=public",
-    logLevel:"info"
+    redisCacheExpiresIn: 60,
+    refreshTokenExpiresIn: 60,
+    accessTokenExpiresIn: 15,
+    logLevel:"info",
     
 }

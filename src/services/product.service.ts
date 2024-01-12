@@ -1,6 +1,4 @@
 import { PrismaClient, Product } from "@prisma/client";
-import { Request, Response } from 'express';
-import { createNewProduct } from '../controllers/product.controller';
 
 const prisma = new PrismaClient();
 

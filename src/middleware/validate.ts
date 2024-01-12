@@ -1,10 +1,11 @@
 // middleware that will parse the schemas and return error messages to the user.
+import { AnyZodObject, ZodError } from 'zod'; //declaration and validation library designed to help you define and enforce data schemas.
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, ZodError } from 'zod';
 
-export const validate =
-(schema: AnyZodObject) =>
-(req: Request, res: Response, next: NextFunction) => {
+export const validate =(schema: AnyZodObject) =>(
+    req: Request, 
+    res: Response, next: 
+    NextFunction) => {
     try {
     schema.parse({
         params: req.params,
