@@ -1,49 +1,50 @@
-import { Category } from '@prisma/client';
 require('dotenv').config();
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response } from "express";
 import config from 'config';
 import http from "http";
-import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
-import connectRedis from "./utils/connectRedis";
 import log from "./utils/logger";
 import productRouter from "./routes/products.routes";
 import CategoryRouter from "./routes/category.routes";
 import AuthRouter from "./routes/auth.routes";
-import redisClient from './utils/connectRedis';
 
 const app = express();
-app.use(express.json())
-
-
 const prisma = new PrismaClient();
 
-const port = config.get<number>('port');
-const origin = config.get<string>('origin');
-
-
-app.use(cors({
-    credentials: true,
-}))
-
-
-
-app.use(compression());
-app.use(cookieParser());
-app.use(bodyParser.json());
-
-
 async function bootstrap(){
+    // 1. Body Parser
+    app.use(express.json())
+
+    // 2. Cookie parser
+    app.use(cookieParser());
+
+    // 3. Cors
+    app.use(cors({
+        credentials: true,
+    }))
+
+    // 4. Compression
+    app.use(compression());
+
+    // 5. Logger
+
+
     // ROUTES
     app.use('/api/products', productRouter);
     app.use('/api/products', productRouter);
     app.use('/api/categories', CategoryRouter);
     app.use('/api/auth', AuthRouter);
 
-
+    // 6. Testing
+    app.get('/api/healthchecker', (_, res: Response) => {
+        res.status(200).json({
+        status: 'success',
+        message: 'Welcome to NodeJs with Prisma and PostgreSQL',
+        });
+    });
 
     // UNHANDLED ROUTES
     app.all("*", (req: Request, res: Response) => {
@@ -51,6 +52,8 @@ async function bootstrap(){
         });
 
     // PORT
+    const port = config.get<number>('port');
+    const origin = config.get<string>('origin');
     const server = http.createServer(app);
     server.listen(port, () => {
         log.info(`Server listening at ${origin}:${port}`);
@@ -64,8 +67,3 @@ bootstrap()
 .finally(async () => {
     await prisma.$disconnect();
 });
-
-
-
-
-
