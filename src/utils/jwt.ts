@@ -23,6 +23,7 @@ export const verifyJwt = <T>(
         const publicKey = Buffer.from(getEnvVariable(keyName), "base64").toString(
             "ascii"
         );
+        
         const decoded = jwt.verify(token, publicKey) as T;
 
         return decoded;

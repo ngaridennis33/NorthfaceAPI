@@ -104,19 +104,34 @@ export const loginUserHandler = async (
 
         const user = await findUniqueUserService(
             // Check if the email is in the database.
-            {email: email.toLocaleLowerCase()},
+            { email: email.toLowerCase() },
 
             // If the email is in the db, return these fields.
-            {id: true,email: true, password: true, verified: true}
+            {id: true, email: true, password: true, verified: true}
             );
 
+            if (!user) {
+                return next(new AppError(400, 'Invalid email or password'));
+            }
+
+            // Check if user is verified
+            if (!user.verified) {
+                return next(
+                new AppError(
+                    401,
+                    'You are not verified, please verify your email to login'
+                )
+                );
+            }
+
             // if the user doesn't exist or the decrypted hashed password is not correct, return error.
-            if (!user || !(await bcrypt.compare(password, user.password))){
-                return next(Error);
+            if (!user || !(await bcrypt.compare(password, user.password))) {
+                return next(new AppError(400, 'Invalid email or password'));
             } 
 
             // Sign Tokens
             const {access_token, refresh_token} = await signTokens(user);
+
             
             // Save the tokens in a cookie
             res.cookie("access_token", access_token, accessTokenCookieOptions); 
@@ -216,6 +231,7 @@ export const logoutUserHandler = async (
 
         res.status(200).json({
             status: 'success',
+
         })
     } catch (err: any) {
         next(err)

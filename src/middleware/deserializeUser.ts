@@ -21,10 +21,12 @@ export const deserializeUser = async (
         } else if (req.cookies.access_token) {
             access_token = req.cookies.access_token;
         }
+    
 
         if (!access_token) {
             return next(new AppError(401, 'You are not logged in'));
         }
+
 
         // Validate the access token
         const decoded = verifyJwt<{ sub: string }>(

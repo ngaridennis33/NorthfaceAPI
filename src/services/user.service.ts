@@ -26,7 +26,6 @@ export const createUserService = async (
 
         return createdUser;
 };
-
 export const findUniqueUserService = async (
     where: Prisma.UserWhereUniqueInput,
     select?: Prisma.UserSelect
