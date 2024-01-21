@@ -10,6 +10,7 @@ import log from "./utils/logger";
 import productRouter from "./routes/products.routes";
 import CategoryRouter from "./routes/category.routes";
 import AuthRouter from "./routes/auth.routes";
+import UserRouter from "./routes/user.routes";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -37,6 +38,7 @@ async function bootstrap(){
     app.use('/api/products', productRouter);
     app.use('/api/categories', CategoryRouter);
     app.use('/api/auth', AuthRouter);
+    app.use('/api/users', UserRouter);
 
     // 6. Testing
     app.get('/api/healthchecker', (_, res: Response) => {

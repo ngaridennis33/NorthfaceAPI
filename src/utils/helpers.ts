@@ -1,7 +1,8 @@
-require("dotenv").config();
+import config from 'config';
 
 export function getEnvVariable(key: string): string {
-const value = process.env[key];
+const value = config.get<string>(key)
+
 
 if (!value || value.length === 0) {
 console.error(`The environment variable ${key} is not set.`);
