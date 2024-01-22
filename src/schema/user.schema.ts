@@ -45,10 +45,10 @@ export const updateUserSchema = object({
         passwordConfirm: string({}),
         role: z.optional(z.nativeEnum(RoleEnumType)),
     })
-    .partial()
-    .refine((data) => data.password === data.passwordConfirm, {
-    path: ['passwordConfirm'],
-    message: 'Passwords do not match',
+        .partial()
+        .refine((data) => data.password === data.passwordConfirm, {
+        path: ['passwordConfirm'],
+        message: 'Passwords do not match',
     }),
 });
 
