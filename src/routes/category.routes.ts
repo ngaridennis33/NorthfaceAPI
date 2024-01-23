@@ -1,3 +1,4 @@
+import { checkUserRole } from './../middleware/require';
 import express from "express";
 import { createNewCategory, deleteCategory, editCategory, getAllCategories } from "../controllers/category.controller";
 
@@ -5,8 +6,8 @@ import { createNewCategory, deleteCategory, editCategory, getAllCategories } fro
 const router = express.Router();
 
 router.get('/', getAllCategories);
-router.post('/', createNewCategory);
-router.put('/', editCategory);
-router.delete('/', deleteCategory);
+router.post('/',checkUserRole, createNewCategory);
+router.put('/',checkUserRole, editCategory);
+router.delete('/',checkUserRole, deleteCategory);
 
 export default router;

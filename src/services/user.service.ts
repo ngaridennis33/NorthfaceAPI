@@ -3,29 +3,22 @@ import { PrismaClient, Prisma, User } from "@prisma/client";
 import config from 'config';
 import { signJwt } from '../utils/jwt';
 
-export const excludedFields = ['password', 'verified', 'verificationCode']; 
+export const excludedFields = [
+    "password",
+    "verified",
+    "verificationCode",
+    "passwordResetAt",
+    "passwordResetToken",
+];
 
 const prisma = new PrismaClient();
 
-
-export const createUserService = async (
-    /**
-     * Creates a new User in the database.
-     * @param newUserData - The data for the new user.
-     * @returns A promise that resolves to the created product.
-     * @throws {Error} Throws an error if there's an issue creating the user.
-     */
-
-    //TODO: Why are undefined inputs not throwing an error
-
-        newUserData: Prisma.UserCreateInput): Promise<User> => {
-        // Create a new user in the database using Prisma
-        const createdUser = await prisma.user.create({
-        data: newUserData,
-        }) as User;
-
-        return createdUser;
+export const createUserService = async (input: Prisma.UserCreateInput) => {
+    return (await prisma.user.create({
+        data: input,
+    })) as User;
 };
+
 export const findUniqueUserService = async (
     where: Prisma.UserWhereUniqueInput,
     select?: Prisma.UserSelect
@@ -54,6 +47,12 @@ export const updateUserService = async (
         return (await prisma.user.update({ where, data, select})) as User;
 };
 
+
+// TODO: Update to get all the users
+export const getAllUsersService = async (
+) => {
+    return (await prisma.user.findMany());
+}
 
 export const signTokens = async (user: Prisma.UserCreateInput) => {
     // 1. Create Session

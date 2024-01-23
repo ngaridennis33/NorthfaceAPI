@@ -18,7 +18,7 @@ export default class Email {
     constructor(private user: Prisma.UserCreateInput, private url: string) {
     this.#firstName = user.name.split(' ')[0];
     this.#to = user.email;
-    this.#from = `NorthFace <admin@northface.com>`;
+    this.#from = `NorthFace <northface.helpdesk@gmail.com>`;
 }
 
 private newTransport() {
@@ -52,7 +52,7 @@ const mailOptions = {
 
 // Send email
 const info = await this.newTransport().sendMail(mailOptions);
-    console.log(nodemailer.getTestMessageUrl(info));
+    // console.log(nodemailer.getTestMessageUrl(info));
 }
 
 async sendVerificationCode() {

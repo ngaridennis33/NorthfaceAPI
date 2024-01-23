@@ -1,9 +1,8 @@
-import { LoginUserInput, RegisterUserInput, VerifyEmailInput } from './../schema/user.schema';
+import { ForgotPasswordInput, LoginUserInput, RegisterUserInput, ResetPasswordInput, VerifyEmailInput } from './../schema/user.schema';
 import { Request, Response, NextFunction, CookieOptions } from "express"; // NextFunction is a callback function that can be called to pass control to the next middleware or route handler in the stack.
 import crypto from "crypto"; // Performs various hashing, encryption and decryption methods.
 import bcrypt from 'bcryptjs'; //Hashing algorithm to  enhance the security of password storage.
-import { createUserService, excludedFields, findUniqueUserService, signTokens, updateUserService } from "../services/user.service";
-import { omit } from "lodash"; // used to create a new object that omits specified properties from an existing object for security eg password.
+import { createUserService, excludedFields, findUniqueUserService, findUserService, signTokens, updateUserService } from "../services/user.service";
 import { Prisma } from "@prisma/client";
 import config from "config";
 import AppError from '../utils/appError';
@@ -294,7 +293,131 @@ export const verifyEmailHandler = async (
     }
 };
 
+export const forgotPasswordHandler = async (
+    req: Request<
+        Record<string, never>,
+        Record<string, never>,
+        ForgotPasswordInput
+    >,
+    res: Response,
+    next: NextFunction
+    ) => {
+    try {
+        // Get the user from the collection
+        const user = await findUserService({ email: req.body.email.toLowerCase() });
+        const message = 'You will receive a reset email if user with that email exist';
+        
+        if (!user) {
+            return res.status(200).json({
+                status: 'success',
+                message,
+            });
+        }
 
+        if (!user.verified) {
+        return res.status(403).json({
+            status: 'fail',
+            message: 'Account not verified',
+        });
+        }
 
+        if (user.provider) {
+        return res.status(403).json({
+            status: 'fail',
+            message:
+            'We found your account. It looks like you registered with a social auth account. Try signing in with social auth.',
+        });
+        }
 
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
 
+        await updateUserService(
+        { id: user.id },
+        {
+            passwordResetToken,
+            passwordResetAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+        { email: true }
+        );
+
+        try {
+        const url = `${config.get<string>('origin')}8000/api/auth/resetpassword/${resetToken}`;
+        await new Email(user, url).sendPasswordResetToken();
+
+        res.status(200).json({
+            status: 'success',
+            message,
+        });
+        } catch (err: any) {
+        await updateUserService(
+            { id: user.id },
+            { passwordResetToken: null, passwordResetAt: null },
+            {}
+        );
+        return res.status(500).json({
+            status: 'error',
+            message: 'There was an error sending email',
+        });
+        }
+    } catch (err: any) {
+        next(err);
+    }
+};
+
+export const resetPasswordHandler = async (
+    req: Request<
+    ResetPasswordInput['params'],
+    Record<string, never>,
+    ResetPasswordInput['body']
+    >,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+    // Get the user from the collection
+    const passwordResetToken = crypto
+        .createHash('sha256')
+        .update(req.params.resetToken)
+        .digest('hex');
+
+    const user = await findUserService({
+        passwordResetToken,
+        passwordResetAt: {
+        gt: new Date(),
+        },
+    });
+
+    if (!user) {
+        return res.status(403).json({
+        status: 'fail',
+        message: 'Invalid token or token has expired',
+        });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 12);
+    // Change password data
+    await updateUserService(
+        {
+        id: user.id,
+        },
+        {
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetAt: null,
+        },
+        { email: true }
+    );
+
+    logout(res);
+    res.status(200).json({
+        status: 'success',
+        message: 'Password data updated successfully',
+    });
+    } catch (err: any) {
+    next(err);
+    }
+};
