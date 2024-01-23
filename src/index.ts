@@ -11,9 +11,13 @@ import productRouter from "./routes/products.routes";
 import CategoryRouter from "./routes/category.routes";
 import AuthRouter from "./routes/auth.routes";
 import UserRouter from "./routes/user.routes";
+import nodemailer from 'nodemailer';
+import validateEnv from './utils/validateEnv';
 
 const app = express();
 const prisma = new PrismaClient();
+
+validateEnv();
 
 async function bootstrap(){
     // 1. Body Parser
@@ -31,6 +35,10 @@ async function bootstrap(){
     app.use(compression());
 
     // 5. Logger
+
+    //TEMPLATE ENGINE
+    app.set('view engine', 'pug');
+    app.set('views', `${__dirname}/views`);
 
 
     // ROUTES

@@ -31,17 +31,15 @@ export const updateUserHandler = async (
 ) => {
 
     try {
-        const userEmail = res.locals.user.email;
+        const user = res.locals.user;
         const {name, email } = req.body;
-        console.log(userEmail)
 
         // Update the user data with defined fields.
         const userData: Partial<UpdateUserInput> = {};
         if (name !== undefined) userData.name = name;
         if (email !== undefined) userData.email = email;
-        // if (image !== undefined) userData.image = image;
 
-        const updatedUserData = await updateUserService(userEmail,userData,res.locals.user.id);
+        const updatedUserData = await updateUserService({id:user.id},userData);
 
         res.status(200).json(updatedUserData);
     } catch (error) {

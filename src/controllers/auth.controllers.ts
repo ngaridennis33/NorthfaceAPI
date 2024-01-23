@@ -9,6 +9,7 @@ import config from "config";
 import AppError from '../utils/appError';
 import { signJwt, verifyJwt } from '../utils/jwt';
 import redisClient from '../utils/connectRedis';
+import Email from '../utils/email';
 
 // Define options for HTTP cookies
 const cookiesOptions: CookieOptions = {
@@ -65,13 +66,29 @@ export const registerUserHandler = async(
                 verificationCode,
             })
 
-            const newUser = omit(user, excludedFields);
-            res.status(201).json({
-                status: "Success",
-                data: {
-                    user:newUser,
-                }
-            })
+             // Handle sending the email with the verification code.
+            const redirectUrl = `${config.get<string>(
+                'origin'
+            )}8000/api/auth/verifyemail/${verifyCode}`;
+            
+
+            try {
+                await new Email(user, redirectUrl).sendVerificationCode();
+                await updateUserService({id:user.id},{verificationCode});
+
+                res.status(201).json({
+                    status: 'success',
+                    message:
+                        'An email with a verification code has been sent to your email',
+                });
+            } catch (error) {
+                await updateUserService({ id: user.id }, { verificationCode: null });
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'There was an error sending email, please try again',
+                });
+            }
+
             
         } catch (err: any) {
             // Catch any errors thrown in the try block
