@@ -277,10 +277,17 @@ export const verifyEmailHandler = async (
             return next (new AppError(401, 'Could not verify email'));
         }
 
-        res.status(200).json({
-            status: 'success',
-            message:'Email verified successfully',
-        })
+        // res.status(200).json({
+        //     status: 'success',
+        //     message:'Email verified successfully',
+        // })
+
+        // Redirect to the frontend email verified page
+        const redirectUrl = `${config.get<string>(
+            'origin'
+        )}3000/verifyemailsuccess?message=Email%20verified%20successfully`;
+        
+        res.redirect(redirectUrl);
         
     } catch (err: any) {
         if (err.code === 'P2025') {
