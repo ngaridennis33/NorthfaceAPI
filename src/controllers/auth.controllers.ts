@@ -78,7 +78,7 @@ export const registerUserHandler = async(
                 res.status(201).json({
                     status: 'success',
                     message:
-                        'An email with a verification code has been sent to your email',
+                        `An email with a verification code has been sent to: ${email}`,
                 });
             } catch (error) {
                 await updateUserService({ id: user.id }, { verificationCode: null });
@@ -277,15 +277,10 @@ export const verifyEmailHandler = async (
             return next (new AppError(401, 'Could not verify email'));
         }
 
-        // res.status(200).json({
-        //     status: 'success',
-        //     message:'Email verified successfully',
-        // })
-
         // Redirect to the frontend email verified page
         const redirectUrl = `${config.get<string>(
             'origin'
-        )}3000/verifyemailsuccess?message=Email%20verified%20successfully`;
+        )}3000/verifyemailsuccess?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
         
         res.redirect(redirectUrl);
         
@@ -311,8 +306,9 @@ export const forgotPasswordHandler = async (
     ) => {
     try {
         // Get the user from the collection
+        const email = req.body.email.toLowerCase();
         const user = await findUserService({ email: req.body.email.toLowerCase() });
-        const message = 'You will receive a reset email if user with that email exist';
+        const message = `A reset verification email has been sent to: ${email} if the associated email address is registered with a user. The email reset link will expire in 10 minutes.`;
         
         if (!user) {
             return res.status(200).json({
@@ -352,7 +348,7 @@ export const forgotPasswordHandler = async (
         );
 
         try {
-        const url = `${config.get<string>('origin')}8000/api/auth/resetpassword/${resetToken}`;
+        const url = `${config.get<string>('origin')}3000/resetpassword?token=${resetToken}`;
         await new Email(user, url).sendPasswordResetToken();
 
         res.status(200).json({
@@ -363,7 +359,6 @@ export const forgotPasswordHandler = async (
         await updateUserService(
             { id: user.id },
             { passwordResetToken: null, passwordResetAt: null },
-            {}
         );
         return res.status(500).json({
             status: 'error',

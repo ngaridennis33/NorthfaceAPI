@@ -12,8 +12,6 @@ router.post('/login', validate(loginUserSchema), loginUserHandler);
 router.post('/refresh',refreshAccessTokenHandler);
 router.get('/logout',deserializeUser, requireUser, logoutUserHandler);
 router.get('/verifyemail/:verificationCode', validate(verifyEmailSchema), verifyEmailHandler);
-router.post('/forgotpassword')
-router.patch('/resetpassword/:resetToken')
 
 router.post(
     '/forgotpassword',
