@@ -41,8 +41,8 @@ class Email {
         __classPrivateFieldSet(this, _Email_from, `NorthFace <northface.helpdesk@gmail.com>`, "f");
     }
     newTransport() {
-        // if (process.env.NODE_ENV === 'production') {
-        // }
+        if (process.env.NODE_ENV === 'production') {
+        }
         return nodemailer_1.default.createTransport(Object.assign(Object.assign({}, smtp), { auth: {
                 user: smtp.user,
                 pass: smtp.pass,

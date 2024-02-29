@@ -22,8 +22,8 @@ export default class Email {
 }
 
 private newTransport() {
-// if (process.env.NODE_ENV === 'production') {
-// }
+if (process.env.NODE_ENV === 'production') {
+}
 
 return nodemailer.createTransport({
     ...smtp,
