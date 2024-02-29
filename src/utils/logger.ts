@@ -3,9 +3,7 @@ import dayjs from "dayjs";
 import config from "config";
 
 
-// const level = config.get<string>('logLevel');
-// const logLevel:"info",
-const level = "info";
+const level = config.get<string>("logLevel");
 
 const log = logger({
     // Adjust the pino-pretty
