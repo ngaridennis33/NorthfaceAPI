@@ -1,28 +1,3 @@
-// {
-//   "compilerOptions": {
-//       "target": "es2016",
-//       "experimentalDecorators": true,
-//       "emitDecoratorMetadata": true,
-//       "module": "commonjs",
-//       "esModuleInterop": true,
-//       "forceConsistentCasingInFileNames": true,
-//       "strict": true,
-//       "strictPropertyInitialization": false,
-//       "skipLibCheck": true,
-//       "allowSyntheticDefaultImports": true,
-//       "noImplicitAny": true,
-//       "moduleResolution": "node",
-//       "sourceMap": true,
-//       "outDir": "dist",
-//       "baseUrl": ".",
-//       "rootDir": ".",
-//       "paths": {
-//           "*": ["node_modules/*", "src/types/*"]
-//       }
-//   },
-//   "include": ["./src/**/*"]
-//   }
-
 {
   "compilerOptions": {
       "module": "commonjs",
@@ -38,5 +13,5 @@
           "*": ["node_modules/*", "src/types/*"]
       }
   },
-  "include": ["./src/**/*","config.tsx"]
+  "include": ["./src/**/*"]
   }
