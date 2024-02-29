@@ -1,4 +1,4 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response } from "express";
 import config from 'config';
@@ -16,6 +16,7 @@ import validateEnv from './utils/validateEnv';
 
 const app = express();
 const prisma = new PrismaClient();
+dotenv.config();
 
 validateEnv();
 
