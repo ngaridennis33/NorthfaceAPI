@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import express, { Request, Response } from "express";
 import config from 'config';
@@ -13,6 +12,7 @@ import AuthRouter from "./routes/auth.routes";
 import UserRouter from "./routes/user.routes";
 import nodemailer from 'nodemailer';
 import validateEnv from './utils/validateEnv';
+import dotenv from 'dotenv';
 
 const app = express();
 const prisma = new PrismaClient();
