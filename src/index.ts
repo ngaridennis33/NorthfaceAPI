@@ -10,7 +10,6 @@ import productRouter from "./routes/products.routes";
 import CategoryRouter from "./routes/category.routes";
 import AuthRouter from "./routes/auth.routes";
 import UserRouter from "./routes/user.routes";
-import nodemailer from 'nodemailer';
 import validateEnv from './utils/validateEnv';
 import dotenv from 'dotenv';
 
