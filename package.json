@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon src/index.ts",
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "ts.check": "tsc --project tsconfig.json",
@@ -32,7 +33,7 @@
     "pre-commit": "^1.2.2",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
@@ -53,10 +54,10 @@
     "lodash": "^4.17.21",
     "nodemailer": "^6.9.7",
     "pino": "^8.17.2",
-    "ts-node": "^10.9.2",
     "prisma": "^5.7.1",
     "pug": "^3.0.2",
     "redis": "^4.6.12",
+    "ts-node": "^10.9.2",
     "zod": "^3.22.4"
   }
 }
