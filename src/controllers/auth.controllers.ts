@@ -279,7 +279,7 @@ export const verifyEmailHandler = async (
 
         // Redirect to the frontend email verified page
         const redirectUrl = `${config.get<string>(
-            'origin'
+            'frontEndOrigin'
         )}verify-email?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
         
         res.redirect(redirectUrl);

@@ -196,7 +196,7 @@ const verifyEmailHandler = (req, res, next) => __awaiter(void 0, void 0, void 0,
             return next(new appError_1.default(401, 'Could not verify email'));
         }
         // Redirect to the frontend email verified page
-        const redirectUrl = `${config_1.default.get('origin')}verify-email?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
+        const redirectUrl = `${config_1.default.get('frontEndOrigin')}verify-email?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
         res.redirect(redirectUrl);
     }
     catch (err) {

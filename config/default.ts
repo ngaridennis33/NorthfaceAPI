@@ -3,6 +3,6 @@ export default {
     refreshTokenExpiresIn: 60,
     accessTokenExpiresIn: 60,
     logLevel:"info",
-    origin: "http:localhost:",
+    origin: "http://localhost:",
     frontEndOrigin: "https://north-face-client.vercel.app/",
 }
