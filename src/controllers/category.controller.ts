@@ -24,7 +24,9 @@ export const getAllCategories = async (req: Request, res: Response): Promise<voi
  * @param req - The incoming request object.
  * @param res - The outgoing response object.
  */
-export const createNewCategory = async (req: Request, res: Response): Promise<void> => {
+export const createNewCategory = async (
+    req: Request, 
+    res: Response): Promise<void> => {
     try {
         const { title, desc, img } = req.body;
 
@@ -39,7 +41,7 @@ export const createNewCategory = async (req: Request, res: Response): Promise<vo
         const slug = generateCategorySlug(title);
 
         // Call the Category service to create the new category
-        const createdCategory = await createNewCategoryService.createNewCategory({
+        const createdCategory = await createNewCategoryService({
             title,
             desc,
             img,

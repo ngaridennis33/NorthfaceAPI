@@ -30,7 +30,7 @@ export const checkUserRole = (
     // TODO: Authenticate and Authorize on the Server:
     const userRole = res.locals.user?.role;
     
-    if (userRole === 'Admin'){
+    if (userRole === 'admin'){
         next()
     } else{
         next(new AppError(403, 'Forbidden!'))

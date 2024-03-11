@@ -1,12 +1,26 @@
-import { Category, PrismaClient } from "@prisma/client";
+import { Category, Prisma, PrismaClient } from "@prisma/client";
 import redisClient from "../utils/connectRedis";
-
 
 // Create a Prisma client instance
 const prisma = new PrismaClient();
 
 // Initialize your Redis client
 
+
+// Define the data structure for creating a new category
+export interface CreateNewCategoryData {
+    title: string;
+    desc: string;
+    img: string[];
+    slug: string;
+}
+
+// Service to create a new category
+export const createNewCategoryService = async (input:Prisma.CategoryCreateInput) => {
+    return (await prisma.category.create({
+        data:input,
+    })) as Category;
+};
 
 /**
  * Service responsible for handling category-related operations.
@@ -43,37 +57,6 @@ export const getCategoriesService = {
     },
 };
 
-// Define the data structure for creating a new category
-export interface CreateNewCategoryData {
-    title: string;
-    desc: string;
-    img: string[];
-    slug: string;
-}
-
-// Service to create a new category
-export const createNewCategoryService = {
-    /**
-     * Creates a new category in the database.
-     * @param newCategoryData - The data for the new category.
-     * @returns A promise that resolves to the created category.
-     * @throws {Error} Throws an error if there's an issue creating the category.
-     */
-    createNewCategory: async (newCategoryData: CreateNewCategoryData): Promise<Category> => {
-        try {
-            // Create a new category using Prisma client
-            const createdCategory = await prisma.category.create({
-                data: newCategoryData,
-            });
-            
-            return createdCategory;
-            
-        } catch (error: any) {
-            // Handle errors and throw a meaningful error message
-            throw new Error(`Error creating category: ${error.message}`);
-        }
-    },
-};
 
 
 // Service to Update a category

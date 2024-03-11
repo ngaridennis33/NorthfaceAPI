@@ -38,5 +38,5 @@
           "*": ["node_modules/*", "src/types/*"]
       }
   },
-  "include": ["./src/**/*","config.tsx"]
+  "include": ["./src/**/*","./config/**/*"]
   }

@@ -21,6 +21,7 @@ export default class Email {
     this.#from = `NorthFace <northface.helpdesk@gmail.com>`;
 }
 
+// TODO check the env
 private newTransport() {
 if (process.env.NODE_ENV === 'production') {
 }
