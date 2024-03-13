@@ -1,5 +1,5 @@
-# Use an official Node.js runtime as a parent image
-FROM node:18
+# Use an official Node.js LTS (Long Term Support) version as a parent image
+FROM node:lts
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
@@ -7,14 +7,14 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install project dependencies
+# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code to the working directory
+# Copy the rest of the application files to the working directory
 COPY . .
 
-# Expose the port your app runs on
-EXPOSE 3000
+# Run Prisma client generation during the build process
+RUN npx prisma generate
 
-# Define the command to run your application
+# Start the application
 CMD ["npm", "start"]
