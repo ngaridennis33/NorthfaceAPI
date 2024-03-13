@@ -1,17 +1,22 @@
 {
   "name": "northfaceapi",
   "version": "1.0.0",
-  "description": "",
+  "description": "API for Northface application",
   "main": "index.js",
   "scripts": {
     "start": "node dist/src/index.js",
-    "build": "dist && tsc",
+    "build": "tsc",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "API",
+    "Northface",
+    "web",
+    "application"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
@@ -30,7 +35,7 @@
     "nodemon": "^3.0.2",
     "pino-pretty": "^10.3.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^4.5.4"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
