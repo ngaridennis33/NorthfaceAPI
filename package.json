@@ -2,7 +2,7 @@
   "name": "northfaceapi",
   "version": "1.0.0",
   "description": "API for Northface application",
-  "main": "index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "start": "node dist/src/index.js",
     "build": "tsc",
