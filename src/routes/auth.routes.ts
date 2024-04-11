@@ -12,18 +12,8 @@ router.post('/login', validate(loginUserSchema), loginUserHandler);
 router.post('/refresh',refreshAccessTokenHandler);
 router.get('/logout',deserializeUser, requireUser, logoutUserHandler);
 router.get('/verifyemail/:verificationCode', validate(verifyEmailSchema), verifyEmailHandler);
-
-router.post(
-    '/forgotpassword',
-    validate(forgotPasswordSchema),
-    forgotPasswordHandler
-);
-
-router.patch(
-    '/resetpassword/:resetToken',
-    validate(resetPasswordSchema),
-    resetPasswordHandler
-);
+router.post('/forgotpassword',validate(forgotPasswordSchema),forgotPasswordHandler);
+router.patch('/resetpassword/:resetToken',validate(resetPasswordSchema),resetPasswordHandler);
 
 
 export default router;

@@ -5,6 +5,20 @@ import AppError from "../utils/appError";
 import redisClient from "../utils/connectRedis";
 import { verifyJwt } from "../utils/jwt";
 
+
+/**
+ * deserializeUser Middleware function, receives a request, response, and next function parameters.
+ * 
+ * Verifies the validity of an access token extracted from request headers or cookies.
+ * Decodes the token to obtain the user ID and checks for a corresponding session in Redis.
+ * Retrieves user details from the database based on the session information.
+ * Attaches the user object (excluding sensitive fields) to the response locals.
+ * 
+ * @param req The request object.
+ * @param res The response object.
+ * @param next The next function to call in the middleware chain.
+ */
+
 export const deserializeUser = async (
     req: Request,
     res: Response,
@@ -48,7 +62,7 @@ export const deserializeUser = async (
         // Check if the user still exists
         const user = await findUniqueUserService({ id: JSON.parse(session).id });
         
-        // Add user to res.locals
+        // Add user to res.locals to allow you access the user object later in subsequent middleware.
         res.locals.user = omit(user, excludedFields);
 
         next();

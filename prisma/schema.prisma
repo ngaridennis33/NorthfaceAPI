@@ -51,14 +51,16 @@ admin
 
 //********** Define the Session model for representing user sessions in the database *********//
 model Session {
-id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
-expires DateTime // Timestamp indicating when the session expires
-sessionToken String @unique // Unique session token for identifying the session
-user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Relationship with the User model, referencing the userId field 
-userId String // Foreign key referencing the User model by userId
+  id               String    @id @default(uuid())
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+  loggedInTime     DateTime @default(now()) // Timestamp indicating when the user logged in
+  loggedOut        DateTime? @default(now()) // Default to current time when the user logs out
+  sessionDuration  Int       @default(0)     // Default session duration to 0 seconds
 
-@@map(name: "sessions") // Set the database table name to "sessions"
+  @@map(name: "sessions") // Set the database table name to "sessions"
 }
+
 
 //******** Define the Account model for representing user accounts in the database ********//
 model Account {
@@ -66,7 +68,6 @@ id String @id @default(uuid()) @map("_id") // Primary key field with a default v
 type String // Type of the account (e.g., "email", "oauth", etc.)
 provider String // Provider of the account (e.g., "google", "facebook", etc.)
 providerAccountId String // Unique identifier for the account provided by the authentication provider
-
 // Optional fields related to authentication tokens and session
 refresh_token String?
 access_token String?

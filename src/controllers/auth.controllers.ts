@@ -2,13 +2,14 @@ import { ForgotPasswordInput, LoginUserInput, RegisterUserInput, ResetPasswordIn
 import { Request, Response, NextFunction, CookieOptions } from "express"; // NextFunction is a callback function that can be called to pass control to the next middleware or route handler in the stack.
 import crypto from "crypto"; // Performs various hashing, encryption and decryption methods.
 import bcrypt from 'bcryptjs'; //Hashing algorithm to  enhance the security of password storage.
-import { createUserService, excludedFields, findUniqueUserService, findUserService, signTokens, updateUserService } from "../services/user.service";
+import { createUserService, findUniqueUserService, findUserService, signTokens, updateUserService } from "../services/user.service";
 import { Prisma } from "@prisma/client";
 import config from "config";
 import AppError from '../utils/appError';
 import { signJwt, verifyJwt } from '../utils/jwt';
 import redisClient from '../utils/connectRedis';
 import Email from '../utils/email';
+import { UpdateUserSessionService } from '../services/session.service';
 
 // Define options for HTTP cookies
 const cookiesOptions: CookieOptions = {
@@ -44,7 +45,7 @@ const refreshTokenCookieOptions: CookieOptions = {
 };
 
 
-// POST /api/auth/register - Register User Handler
+// POST Register User Handler
 
 export const registerUserHandler = async(
     req: Request<{}, {}, RegisterUserInput>,
@@ -92,7 +93,7 @@ export const registerUserHandler = async(
         } catch (err: any) {
             // Catch any errors thrown in the try block
             if (err instanceof Prisma.PrismaClientKnownRequestError) {
-              // Check if the error is a known Prisma client error
+            // Check if the error is a known Prisma client error
             if (err.code === 'P2002') {
             // Check if the Prisma error code is 'P2002'
             return res.status(409).json({
@@ -106,7 +107,48 @@ export const registerUserHandler = async(
         }
     }
 
-// POST /api/auth/login - Login Registered user
+//GET Verify Email Handler
+
+export const verifyEmailHandler = async (
+    req: Request<VerifyEmailInput>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const verificationCode = crypto
+            .createHash('sha256')
+            .update(req.params.verificationCode)
+            .digest('hex');
+        
+        const user = await updateUserService(
+            {verificationCode},
+            {verified: true, verificationCode: null},
+            {email: true}
+        );
+
+        if(!user) {
+            return next (new AppError(401, 'Could not verify email'));
+        }
+
+        // Redirect to the frontend email verified page
+        const redirectUrl = `${config.get<string>(
+            'frontEndOrigin'
+        )}verify-email?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
+        
+        res.redirect(redirectUrl);
+        
+    } catch (err: any) {
+        if (err.code === 'P2025') {
+            return res.status(403).json({
+            status: 'fail',
+            message: `Verification code is invalid or user doesn't exist`,
+            });
+        }
+        next(err);
+    }
+};
+
+// POST login User Handler
 
 export const loginUserHandler = async (
     req: Request<{}, {}, LoginUserInput>,
@@ -148,7 +190,13 @@ export const loginUserHandler = async (
             // Sign Tokens
             const {access_token, refresh_token} = await signTokens(user);
 
-            
+            // Save the session in the DB
+            await UpdateUserSessionService({
+                user: {
+                    connect: { id: user.id }
+                },
+            });
+
             // Save the tokens in a cookie
             res.cookie("access_token", access_token, accessTokenCookieOptions); 
             res.cookie("refresh_token", refresh_token, refreshTokenCookieOptions);
@@ -169,131 +217,7 @@ export const loginUserHandler = async (
     }
 }
 
-// POST /api/auth/refresh - refreshAccessTokenHandler
-
-export const refreshAccessTokenHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    try{
-        const refresh_token = req.cookies.refresh_token;
-        const message = 'Could not refresh Access Token';
-
-        if (!refresh_token){
-            return next(new AppError(403, message));
-        }
-
-        // Validate the refresh token
-        const decoded = verifyJwt<{sub: string}>(
-            refresh_token,
-            'refreshTokenPublicKey'
-        )
-        if (!decoded) {
-            return next( new AppError(403, message));
-        }
-
-        // Check if the user has a valid session
-        const session = await redisClient.get(decoded.sub);
-
-        if (!session) {
-            return next(new AppError(403, message));
-        }
-
-        // Check of the user still exists
-        const user = await findUniqueUserService({ id: JSON.parse(session).id });
-
-        if (!user) {
-            return next(new AppError(403, message));
-        }
-
-        // Sign new access Token
-        const access_token = signJwt({ sub: user.id }, 'accessTokenPrivateKey', {
-            expiresIn: `${config.get<number>('accessTokenExpiresIn')}m`,
-        });
-
-        // 4. Add Cookies
-        res.cookie('access_token', access_token, accessTokenCookieOptions);
-        res.cookie('logged_in', true, {
-            ...accessTokenCookieOptions,
-            httpOnly: false,
-        });
-
-        // 5. Send response
-        res.status(200).json({
-            status: 'success',
-            access_token,
-            });
-        } catch (err: any) {
-            next(err);
-    }
-};
-
-// DELETE /api/auth/logout - Logout user handler
-function logout(res: Response) {
-    res.cookie('access_token', '', { maxAge: 1 });
-    res.cookie('refresh_token', '', { maxAge: 1 });
-    res.cookie('logged_in', '', { maxAge: 1 });
-}
-
-export const logoutUserHandler = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    try {
-        await redisClient.del(res.locals.user.id);
-        logout(res);
-
-        res.status(200).json({
-            status: 'success',
-
-        })
-    } catch (err: any) {
-        next(err)
-    }
-}
-
-// POST /api/auth/verify - Verify Email Handler
-
-export const verifyEmailHandler = async (
-    req: Request<VerifyEmailInput>,
-    res: Response,
-    next: NextFunction
-) => {
-    try {
-        const verificationCode = crypto
-            .createHash('sha256')
-            .update(req.params.verificationCode)
-            .digest('hex');
-        
-        const user = await updateUserService(
-            {verificationCode},
-            {verified: true, verificationCode: null},
-            {email: true}
-        );
-
-        if(!user) {
-            return next (new AppError(401, 'Could not verify email'));
-        }
-
-        // Redirect to the frontend email verified page
-        const redirectUrl = `${config.get<string>(
-            'frontEndOrigin'
-        )}verify-email?title=Email%20Verification%20Complete&res=Your%20email%20has%20been%20verified%20successfully.`;
-        
-        res.redirect(redirectUrl);
-        
-    } catch (err: any) {
-        if (err.code === 'P2025') {
-            return res.status(403).json({
-            status: 'fail',
-            message: `Verification code is invalid or user doesn't exist`,
-            });
-        }
-        next(err);
-    }
-};
+//POST forgotPassword Handler
 
 export const forgotPasswordHandler = async (
     req: Request<
@@ -370,6 +294,8 @@ export const forgotPasswordHandler = async (
     }
 };
 
+// PATCH resetPasswordHandler
+
 export const resetPasswordHandler = async (
     req: Request<
     ResetPasswordInput['params'],
@@ -423,3 +349,104 @@ export const resetPasswordHandler = async (
     next(err);
     }
 };
+
+// POST refreshAccessTokenHandler
+
+export const refreshAccessTokenHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try{
+        const refresh_token = req.cookies.refresh_token;
+        const message = 'Could not refresh Access Token';
+
+        if (!refresh_token){
+            return next(new AppError(403, message));
+        }
+
+        // Validate the refresh token
+        const decoded = verifyJwt<{sub: string}>(
+            refresh_token,
+            'refreshTokenPublicKey'
+        )
+        if (!decoded) {
+            return next( new AppError(403, message));
+        }
+
+        // Check if the user has a valid session
+        const session = await redisClient.get(decoded.sub);
+
+        if (!session) {
+            return next(new AppError(403, message));
+        }
+
+        // Check of the user still exists
+        const user = await findUniqueUserService({ id: JSON.parse(session).id });
+
+        if (!user) {
+            return next(new AppError(403, message));
+        }
+
+        // Sign new access Token
+        const access_token = signJwt({ sub: user.id }, 'accessTokenPrivateKey', {
+            expiresIn: `${config.get<number>('accessTokenExpiresIn')}m`,
+        });
+
+        // 4. Add Cookies
+        res.cookie('access_token', access_token, accessTokenCookieOptions);
+        res.cookie('logged_in', true, {
+            ...accessTokenCookieOptions,
+            httpOnly: false,
+        });
+
+        // 5. Send response
+        res.status(200).json({
+            status: 'success',
+            access_token,
+            });
+        } catch (err: any) {
+            next(err);
+    }
+};
+
+// DELETE Logout user handler
+
+function logout(res: Response) {
+    res.cookie('access_token', '', { maxAge: 1 });
+    res.cookie('refresh_token', '', { maxAge: 1 });
+    res.cookie('logged_in', '', { maxAge: 1 });
+}
+
+export const logoutUserHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = res.locals.user;
+        await redisClient.del(user.id);
+        logout(res);
+        try {
+            // Update the LoggedOut Time and duration.
+            const loggedOut = new Date();
+
+            await UpdateUserSessionService({
+                user: {
+                    connect: { id: user.id }
+                },
+                loggedOut:loggedOut,
+            });
+            
+        } catch (error) {
+            
+        }
+
+        res.status(200).json({
+            status: 'success',
+
+        })
+    } catch (err: any) {
+        next(err)
+    }
+}

@@ -1,7 +1,8 @@
-import { checkUserRole, requireUser } from './../middleware/require';
+import { requireUser } from './../middleware/require';
 import express from "express";
 import { createNewCategory, deleteCategory, editCategory, getAllCategories } from "../controllers/category.controller";
 import { deserializeUser } from './../middleware/deserializeUser';
+import { checkUserRole } from './../middleware/role';
 
 
 const router = express.Router();

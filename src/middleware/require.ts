@@ -20,19 +20,3 @@ export const requireUser = (
         next(err);
     }
 };
-
-export const checkUserRole = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    
-    // TODO: Authenticate and Authorize on the Server:
-    const userRole = res.locals.user?.role;
-    
-    if (userRole === 'admin'){
-        next()
-    } else{
-        next(new AppError(403, 'Forbidden!'))
-    }
-}

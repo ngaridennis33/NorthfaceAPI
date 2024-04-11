@@ -5,25 +5,53 @@ import { omit } from "lodash"; // used to create a new object that omits specifi
 import AppError from '../utils/appError';
 
 
-//Get logged in user
-export const getUserHandler = async (
+// GET get User Handler(LoggedIn User Session)
+export const getMeHandler = async (
     req: Request,
     res: Response,
     next: NextFunction
     ) => {
     try {
     const user = res.locals.user;
-
+    const loggedInUser = omit(user,excludedFields);
     res.status(200).status(200).json({
         status: 'success',
         data: {
-        user,
+            loggedInUser,
         },
     });
     } catch (err: any) {
     next(err);
     }
 };
+
+// GET Get all users in the DB.
+export const getAllUsersHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+    )=> {
+        try {
+            const users = await getAllUsersService();
+            
+            if (!users) {
+                return next(new AppError(401, 'Forbidden'));
+            }
+            const allUsers = omit(users, excludedFields)
+            res.status(200).status(200).json({
+                status: 'success',
+                data: {
+                    allUsers,
+                }
+            });
+            
+
+
+        } catch (error) {
+            next(error)
+            
+        }
+}
 
 // Update User Profile
 export const updateUserHandler = async (
@@ -53,31 +81,13 @@ export const updateUserHandler = async (
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+// Delelete User
+/**
+ * TODO: const deleteUser = async(req,res) => {
+ *  const token = req.cookies.accessToken;
+ *  if(!token) return res.status(401).send("You are not authenticated!")
+ * }
+ * 
+ */
 
-// Get all users
-export const getAllUsers = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-    )=> {
-        try {
-            const users = await getAllUsersService();
-            
-            if (!users) {
-                return next(new AppError(401, 'Forbidden'));
-            }
-
-        } catch (error) {
-            next(error)
-            
-        }
-    }
-
-// create session
-// get sessions
-// Delelete sessions 
-// login
-// Get user profile
-
-// logout
 // Delete user

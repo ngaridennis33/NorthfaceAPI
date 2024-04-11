@@ -13,12 +13,14 @@ export const excludedFields = [
 
 const prisma = new PrismaClient();
 
+// Create a New user 
 export const createUserService = async (input: Prisma.UserCreateInput) => {
     return (await prisma.user.create({
         data: input,
     })) as User;
 };
 
+// Return a unique user based on the unique contraints on the schema eg. Email
 export const findUniqueUserService = async (
     where: Prisma.UserWhereUniqueInput,
     select?: Prisma.UserSelect
@@ -29,6 +31,7 @@ export const findUniqueUserService = async (
     })) as User;
 };
 
+// Return the first instance of the User
 export const findUserService = async (
     where: Partial<Prisma.UserWhereInput>,
     select?: Prisma.UserSelect
@@ -39,6 +42,7 @@ export const findUserService = async (
     })) as User;
 };
 
+// Update the User Table based on data provided.
 export const updateUserService = async (
     where: Prisma.UserWhereUniqueInput,
     data: Prisma.UserUpdateInput,
@@ -47,13 +51,13 @@ export const updateUserService = async (
         return (await prisma.user.update({ where, data, select})) as User;
 };
 
-
-// TODO: Update to get all the users
+// Return all users in the DB
 export const getAllUsersService = async (
-) => {
-    return (await prisma.user.findMany());
+    ) => {
+        return (await prisma.user.findMany());
 }
 
+// Generate an Access and Refresh token.
 export const signTokens = async (user: Prisma.UserCreateInput) => {
     // 1. Create Session
     redisClient.set(`${user.id}`, JSON.stringify(user),{

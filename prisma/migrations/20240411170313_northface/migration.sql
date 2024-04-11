@@ -23,9 +23,10 @@ CREATE TABLE "users" (
 -- CreateTable
 CREATE TABLE "sessions" (
     "id" TEXT NOT NULL,
-    "expires" TIMESTAMP(3) NOT NULL,
-    "sessionToken" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "loggedInTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "loggedOut" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "sessionDuration" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
@@ -122,9 +123,6 @@ CREATE INDEX "users_email_verificationCode_passwordResetToken_idx" ON "users"("e
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_verificationCode_passwordResetToken_key" ON "users"("email", "verificationCode", "passwordResetToken");
-
--- CreateIndex
-CREATE UNIQUE INDEX "sessions_sessionToken_key" ON "sessions"("sessionToken");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "accounts_provider_providerAccountId_key" ON "accounts"("provider", "providerAccountId");

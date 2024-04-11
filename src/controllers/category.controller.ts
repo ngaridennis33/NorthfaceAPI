@@ -1,4 +1,3 @@
-import { Category } from '@prisma/client';
 import { Request, Response } from "express";
 import { createNewCategoryService, deleteCategoryService, getCategoriesService, updateCategoryService } from "../services/category.service";
 
