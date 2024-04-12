@@ -10,6 +10,7 @@ import { signJwt, verifyJwt } from '../utils/jwt';
 import redisClient from '../utils/connectRedis';
 import Email from '../utils/email';
 import { UpdateUserSessionService } from '../services/session.service';
+import { getLocalTime, clearCookies } from '../utils/helpers';
 
 // Define options for HTTP cookies
 const cookiesOptions: CookieOptions = {
@@ -29,17 +30,14 @@ const cookiesOptions: CookieOptions = {
 // This describes how long the accessTokens are going to last.
 const accessTokenCookieOptions: CookieOptions = {
     ...cookiesOptions,
-    expires: new Date(
-      Date.now() + config.get<number>('accessTokenExpiresIn') * 60 * 1000
-    ),
+    expires:new Date(getLocalTime().getTime() + config.get<number>('accessTokenExpiresIn') * 60 * 1000),
     maxAge: config.get<number>('accessTokenExpiresIn') * 60 * 1000,
 };
 
 // This explains how long the refreshTokens are going to last.
 const refreshTokenCookieOptions: CookieOptions = {
     ...cookiesOptions,
-    expires: new Date(
-      Date.now() + config.get<number>('refreshTokenExpiresIn') * 60 * 1000
+    expires:new Date(getLocalTime().getTime()  + config.get<number>('refreshTokenExpiresIn') * 60 * 1000
     ),
     maxAge: config.get<number>('refreshTokenExpiresIn') * 60 * 1000,
 };
@@ -266,7 +264,7 @@ export const forgotPasswordHandler = async (
         { id: user.id },
         {
             passwordResetToken,
-            passwordResetAt: new Date(Date.now() + 10 * 60 * 1000),
+            passwordResetAt:new Date(getLocalTime().getTime() + 10 * 60 * 1000),
         },
         { email: true }
         );
@@ -340,7 +338,7 @@ export const resetPasswordHandler = async (
         { email: true }
     );
 
-    logout(res);
+    clearCookies(res);
     res.status(200).json({
         status: 'success',
         message: 'Password data updated successfully',
@@ -412,12 +410,6 @@ export const refreshAccessTokenHandler = async (
 
 // DELETE Logout user handler
 
-function logout(res: Response) {
-    res.cookie('access_token', '', { maxAge: 1 });
-    res.cookie('refresh_token', '', { maxAge: 1 });
-    res.cookie('logged_in', '', { maxAge: 1 });
-}
-
 export const logoutUserHandler = async (
     req: Request,
     res: Response,
@@ -426,11 +418,10 @@ export const logoutUserHandler = async (
     try {
         const user = res.locals.user;
         await redisClient.del(user.id);
-        logout(res);
+        clearCookies(res);
         try {
             // Update the LoggedOut Time and duration.
-            const loggedOut = new Date();
-
+            const loggedOut = getLocalTime();
             await UpdateUserSessionService({
                 user: {
                     connect: { id: user.id }

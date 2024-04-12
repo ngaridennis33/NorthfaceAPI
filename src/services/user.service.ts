@@ -1,5 +1,5 @@
 import redisClient from './../utils/connectRedis';
-import { PrismaClient, Prisma, User } from "@prisma/client";
+import { PrismaClient, Prisma, User, DeletedUser } from "@prisma/client";
 import config from 'config';
 import { signJwt } from '../utils/jwt';
 
@@ -75,3 +75,18 @@ export const signTokens = async (user: Prisma.UserCreateInput) => {
 
     return {access_token, refresh_token};
 }
+
+// Add a user to the Delete Table
+export const createDeleteService = async (input: Prisma.DeletedUserCreateInput) => {
+    return (await prisma.deletedUser.create({
+        data: input,
+    })) as DeletedUser;
+};
+
+// Delete User from the Users Table
+export const deleteUserService = async (input: Prisma.UserWhereUniqueInput) => {
+    return (await prisma.user.delete({
+        where: input,
+    })) as User;
+};
+

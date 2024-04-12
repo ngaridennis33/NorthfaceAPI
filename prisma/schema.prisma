@@ -1,157 +1,167 @@
 // Define the Prisma Client generator configuration
 generator client {
-provider = "prisma-client-js"
-}
+    provider = "prisma-client-js"
+    }
+    
+    // Define the PostgreSQL datasource configuration
+    datasource db {
+    provider = "postgresql"
+    url = env("DATABASE_URL")
+    }
+    
+    //********* Define the User model for representing users in the database ******//
+    model User {
+    id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
+    name String @db.VarChar(255) // User's name, stored as a VARCHAR(255) in the database
+    email String @unique // User's email, unique across all users
+    image String? @default("default.png") // User's image path with a default value of "default.png"
+    verified Boolean? @default(false) // Boolean flag indicating whether the user is verified, default is false
+    password String // User's password
+    role RoleEnumType? @default(user) // User's role, an enumerated type with a default value of "user"
+    provider String? // Provider information, such as OAuth provider (e.g., Google, Facebook)
+    
+    // Password reset token and timestamp for password reset
+    passwordResetToken String?
+    passwordResetAt DateTime?
+    
+    verificationCode String? @unique @db.Text // Verification code for email confirmation, stored as TEXT in the database
+    
+    // Timestamps for creation and last update
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    
+    // Relationships with other models
+    orders Order[]
+    addresses Address[]
+    sessions Session[]
+    account Account[]
+    
+    // Define a unique constraint on a combination of fields
+    @@unique([email, verificationCode, passwordResetToken])
+    // Define an index on specified fields
+    @@index([email, verificationCode, passwordResetToken])
+    @@map(name: "users") // Set the database table name to "users"
+    }
+    
+    // Define the enumerated type for user roles (markdown style)
+    enum RoleEnumType {
+    user
+    admin
+    }
+    
+    //********** Define the Session model for representing user sessions in the database *********//
+    model Session {
+      id               String    @id @default(uuid())
+      user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+      userId           String
+      loggedInTime     DateTime @default(now()) // Timestamp indicating when the user logged in
+      loggedOut        DateTime? @default(now()) // Default to current time when the user logs out
+      sessionDuration  Int       @default(0)     // Default session duration to 0 seconds
+    
+      @@map(name: "sessions") // Set the database table name to "sessions"
+    }
+    
+    
+    //******** Define the Account model for representing user accounts in the database ********//
+    model Account {
+    id String @id @default(uuid()) @map("_id") // Primary key field with a default value generated using the uuid() function
+    type String // Type of the account (e.g., "email", "oauth", etc.)
+    provider String // Provider of the account (e.g., "google", "facebook", etc.)
+    providerAccountId String // Unique identifier for the account provided by the authentication provider
+    // Optional fields related to authentication tokens and session
+    refresh_token String?
+    access_token String?
+    expires_at Int?
+    token_type String?
+    scope String?
+    id_token String?
+    session_state String?
+    
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Define the relationship with the User model
+    userId String // Foreign key referencing the User model by userId
+    
+    @@unique([provider, providerAccountId]) // Ensure uniqueness based on the combination of provider and providerAccountId
+    @@map(name: "accounts") // Set the database table name to "accounts"
+    }
+    
+    //******** Define the Product model for representing products in the database ********//
+    model Product {
+    id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
+    name String // Name of the product
+    description String? // Optional description of the product
+    price Float // Price of the product
+    images String[] // Array of strings representing image URLs for the product
+    inventoryCount Int @default(0) // Count of available inventory for the product with a default value of 0
+    // Timestamps for when the product was created and last updated
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    category Category @relation(fields: [categoryId], references: [id]) // Relationship with the Category model based on the catSlug field
+    categoryId String
+    orders OrderItem[] // Relationship with the OrderItem model representing orders containing this product
+    
+    @@map(name: "products") // Set the database table name to "products"
+    }
+    
+    //******** Define the Category model for representing product categories in the database ********//
+    model Category {
+    id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
+    title String // Title of the category
+    slug String @unique // Unique slug for the category
+    desc String // Description of the category
+    img String[] // Array of strings representing image URLs for the category
+    products Product[] // Relationship with the Product model, representing products in this category
+    
+    @@map(name: "categories") // Set the database table name to "categories"
+    }
+    
+    //******** Define the Order model for representing orders in the database ********//
+    model Order {
+    id String @id @default(uuid()) // Primary key field for the order, using a UUID as the default value
+    user User @relation(fields: [userId], references: [id]) // Relationship with the User model, representing the user who placed the order
+    userId String // Foreign key linking to the userId field in the User model
+    paymentStatus String // Payment status of the order
+    shippingStatus String // Shipping status of the order
+    createdAt DateTime @default(now()) // Timestamp indicating when the order was created
+    updatedAt DateTime @updatedAt // Timestamp indicating the last update time of the order
+    items OrderItem[] // Relationship with the OrderItem model, representing items included in the order
+    
+    @@map(name: "orders") // Set the database table name to "orders"
+    }
+    
+    //******** Define the OrderItem model for representing items within an order ********/
+    model OrderItem {
+    id String @id @default(uuid()) // Primary key field for the order item, using a UUID as the default value
+    order Order @relation(fields: [orderId], references: [id]) // Relationship with the Order model, representing the order to which the item belongs
+    orderId String // Foreign key linking to the orderId field in the Order model
+    product Product @relation(fields: [productId], references: [id]) // Relationship with the Product model, representing the product associated with the item
+    productId String // Foreign key linking to the productId field in the Product model
+    quantity Int // Quantity of the product included in the order item
+    price Float // Price of a single unit of the product in the order item
+    
+    @@map(name: "orderItems") // Set the database table name to "orderItems"
+    }
+    
+    //******** Define the Address model for representing user addresses in the database ********/
+    model Address {
+    id String @id @default(uuid()) // Primary key field for the address, using a UUID as the default value
+    user User @relation(fields: [userId], references: [id]) // Relationship with the User model, representing the user to whom the address belongs
+    userId String // Foreign key linking to the userId field in the User model
+    street String // Street address of the user
+    city String // City where the user is located
+    state String // State or region where the user is located
+    zip String // ZIP or postal code of the user's address
+    country String // Country of the user's address
+    isDefault Boolean @default(false) // Indicates whether the address is the default address for the user
+    
+    @@map(name: "addresses") // Set the database table name to "addresses"
+    }
+model DeletedUser {
+  id         Int      @id @default(autoincrement())
+  deletedAt  DateTime @default(now())
+  originalId String
+  name       String
+  email      String
+  image      String
 
-// Define the PostgreSQL datasource configuration
-datasource db {
-provider = "postgresql"
-url = env("DATABASE_URL")
-}
-
-//********* Define the User model for representing users in the database ******//
-model User {
-id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
-name String @db.VarChar(255) // User's name, stored as a VARCHAR(255) in the database
-email String @unique // User's email, unique across all users
-image String? @default("default.png") // User's image path with a default value of "default.png"
-verified Boolean? @default(false) // Boolean flag indicating whether the user is verified, default is false
-password String // User's password
-role RoleEnumType? @default(user) // User's role, an enumerated type with a default value of "user"
-provider String? // Provider information, such as OAuth provider (e.g., Google, Facebook)
-
-// Password reset token and timestamp for password reset
-passwordResetToken String?
-passwordResetAt DateTime?
-
-verificationCode String? @unique @db.Text // Verification code for email confirmation, stored as TEXT in the database
-
-// Timestamps for creation and last update
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-
-// Relationships with other models
-orders Order[]
-addresses Address[]
-sessions Session[]
-account Account[]
-
-// Define a unique constraint on a combination of fields
-@@unique([email, verificationCode, passwordResetToken])
-// Define an index on specified fields
-@@index([email, verificationCode, passwordResetToken])
-@@map(name: "users") // Set the database table name to "users"
-}
-
-// Define the enumerated type for user roles (markdown style)
-enum RoleEnumType {
-user
-admin
-}
-
-//********** Define the Session model for representing user sessions in the database *********//
-model Session {
-  id               String    @id @default(uuid())
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId           String
-  loggedInTime     DateTime @default(now()) // Timestamp indicating when the user logged in
-  loggedOut        DateTime? @default(now()) // Default to current time when the user logs out
-  sessionDuration  Int       @default(0)     // Default session duration to 0 seconds
-
-  @@map(name: "sessions") // Set the database table name to "sessions"
-}
-
-
-//******** Define the Account model for representing user accounts in the database ********//
-model Account {
-id String @id @default(uuid()) @map("_id") // Primary key field with a default value generated using the uuid() function
-type String // Type of the account (e.g., "email", "oauth", etc.)
-provider String // Provider of the account (e.g., "google", "facebook", etc.)
-providerAccountId String // Unique identifier for the account provided by the authentication provider
-// Optional fields related to authentication tokens and session
-refresh_token String?
-access_token String?
-expires_at Int?
-token_type String?
-scope String?
-id_token String?
-session_state String?
-
-user User @relation(fields: [userId], references: [id], onDelete: Cascade) // Define the relationship with the User model
-userId String // Foreign key referencing the User model by userId
-
-@@unique([provider, providerAccountId]) // Ensure uniqueness based on the combination of provider and providerAccountId
-@@map(name: "accounts") // Set the database table name to "accounts"
-}
-
-//******** Define the Product model for representing products in the database ********//
-model Product {
-id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
-name String // Name of the product
-description String? // Optional description of the product
-price Float // Price of the product
-images String[] // Array of strings representing image URLs for the product
-inventoryCount Int @default(0) // Count of available inventory for the product with a default value of 0
-// Timestamps for when the product was created and last updated
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-category Category @relation(fields: [categoryId], references: [id]) // Relationship with the Category model based on the catSlug field
-categoryId String
-orders OrderItem[] // Relationship with the OrderItem model representing orders containing this product
-
-@@map(name: "products") // Set the database table name to "products"
-}
-
-//******** Define the Category model for representing product categories in the database ********//
-model Category {
-id String @id @default(uuid()) // Primary key field with a default value generated using the uuid() function
-title String // Title of the category
-slug String @unique // Unique slug for the category
-desc String // Description of the category
-img String[] // Array of strings representing image URLs for the category
-products Product[] // Relationship with the Product model, representing products in this category
-
-@@map(name: "categories") // Set the database table name to "categories"
-}
-
-//******** Define the Order model for representing orders in the database ********//
-model Order {
-id String @id @default(uuid()) // Primary key field for the order, using a UUID as the default value
-user User @relation(fields: [userId], references: [id]) // Relationship with the User model, representing the user who placed the order
-userId String // Foreign key linking to the userId field in the User model
-paymentStatus String // Payment status of the order
-shippingStatus String // Shipping status of the order
-createdAt DateTime @default(now()) // Timestamp indicating when the order was created
-updatedAt DateTime @updatedAt // Timestamp indicating the last update time of the order
-items OrderItem[] // Relationship with the OrderItem model, representing items included in the order
-
-@@map(name: "orders") // Set the database table name to "orders"
-}
-
-//******** Define the OrderItem model for representing items within an order ********/
-model OrderItem {
-id String @id @default(uuid()) // Primary key field for the order item, using a UUID as the default value
-order Order @relation(fields: [orderId], references: [id]) // Relationship with the Order model, representing the order to which the item belongs
-orderId String // Foreign key linking to the orderId field in the Order model
-product Product @relation(fields: [productId], references: [id]) // Relationship with the Product model, representing the product associated with the item
-productId String // Foreign key linking to the productId field in the Product model
-quantity Int // Quantity of the product included in the order item
-price Float // Price of a single unit of the product in the order item
-
-@@map(name: "orderItems") // Set the database table name to "orderItems"
-}
-
-//******** Define the Address model for representing user addresses in the database ********/
-model Address {
-id String @id @default(uuid()) // Primary key field for the address, using a UUID as the default value
-user User @relation(fields: [userId], references: [id]) // Relationship with the User model, representing the user to whom the address belongs
-userId String // Foreign key linking to the userId field in the User model
-street String // Street address of the user
-city String // City where the user is located
-state String // State or region where the user is located
-zip String // ZIP or postal code of the user's address
-country String // Country of the user's address
-isDefault Boolean @default(false) // Indicates whether the address is the default address for the user
-
-@@map(name: "addresses") // Set the database table name to "addresses"
+  @@map("DeletedUsers")
 }

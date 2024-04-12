@@ -38,6 +38,7 @@ export const loginUserSchema = object({
 export const updateUserSchema = object({
     body: object({
         name: string({}),
+        image: string({}),
         email: string({}).email('Invalid email address'),
         password: string({})
         .min(8, 'Password must be more than 8 characters')
@@ -48,7 +49,7 @@ export const updateUserSchema = object({
         .partial()
         .refine((data) => data.password === data.passwordConfirm, {
         path: ['passwordConfirm'],
-        message: 'Passwords do not match',
+        message: 'Passwords do not match. Confirm Password.',
     }),
 });
 
@@ -83,6 +84,16 @@ export const resetPasswordSchema = object({
     }),
 });
 
+export const deleteUserSchema = object({
+    body: object({
+        deletedAt: z.coerce.date(),
+        originalId: string({}),
+        name: string({}),
+        image: string({}),
+        email: string({}).email('Invalid email address'),
+    })
+});
+
 
 // Represents the expected input structure for user registration derived from the body property of the registerUserSchema, but with the passwordConfirm property excluded.
 // This ensure that the passwordConfirm field is not included in the final data structure used for processing.
@@ -97,3 +108,4 @@ export type VerifyEmailInput = TypeOf<typeof verifyEmailSchema>['params'];
 export type UpdateUserInput = TypeOf<typeof updateUserSchema>['body'];
 export type ForgotPasswordInput = TypeOf<typeof forgotPasswordSchema>['body'];
 export type ResetPasswordInput = TypeOf<typeof resetPasswordSchema>;
+export type deleteUserInput = TypeOf<typeof deleteUserSchema>;

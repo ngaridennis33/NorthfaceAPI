@@ -1,4 +1,3 @@
-// Define a custom error class named AppError that extends the built-in Error class
 export default class AppError extends Error {
     // Additional properties for the custom error class
     status: string; // Represents the status of the error ('fail' or 'error')
@@ -18,5 +17,14 @@ export default class AppError extends Error {
 
         // Capture the stack trace for better debugging information
         Error.captureStackTrace(this, this.constructor);
+    }
+
+    // Method to convert the error details to a JSON object
+    toJSON() {
+        return {
+            status: this.status,
+            statusCode: this.statusCode,
+            message: this.message,
+        };
     }
 }

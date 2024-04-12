@@ -41,7 +41,6 @@ export const deserializeUser = async (
             return next(new AppError(401, 'You are not logged in'));
         }
 
-
         // Validate the access token
         const decoded = verifyJwt<{ sub: string }>(
         access_token,

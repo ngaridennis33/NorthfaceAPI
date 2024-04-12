@@ -1,8 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { excludedFields, getAllUsersService, updateUserService } from '../services/user.service';
-import { UpdateUserInput } from '../schema/user.schema';
+import { createDeleteService, deleteUserService, excludedFields, getAllUsersService, updateUserService } from '../services/user.service';
+import { UpdateUserInput, updateUserSchema } from '../schema/user.schema';
 import { omit } from "lodash"; // used to create a new object that omits specified properties from an existing object for security eg password.
 import AppError from '../utils/appError';
+import { Prisma } from '@prisma/client';
+import { clearCookies, getLocalTime } from '../utils/helpers';
+import redisClient from '../utils/connectRedis';
 
 
 // GET get User Handler(LoggedIn User Session)
@@ -62,32 +65,83 @@ export const updateUserHandler = async (
 
     try {
         const user = res.locals.user;
-        const {name, email } = req.body;
+        const { ...data } = req.body;
 
-        // Update the user data with defined fields.
-        const userData: Partial<UpdateUserInput> = {};
-        if (name !== undefined) userData.name = name;
+        // Validate if data matches the UpdateUserInput type
+        const validationResult = updateUserSchema.safeParse({body: data});
 
-        // TODO Send the verification code to the new email set
-        if (email !== undefined) userData.email = email;
+        if (validationResult.success === false) {
+            // If validation fails, send a 400 Bad Request response with validation errors
+            return next(new AppError(400, JSON.stringify({
+                status: 'error',
+                message: 'Input Validation failed',
+                errors: validationResult.error.flatten(), // Flatten errors for better readability
+            })));
+        }
 
-        const updatedUserData = await updateUserService({id:user.id},userData);
-        const newUser = omit(updatedUserData,excludedFields);
+        // If validation passes, proceed with updating the user
+        const updatedUserData = await updateUserService({id: user.id},data);
+        const updatedUser = omit(updatedUserData, excludedFields);
+        res.status(200).json(updatedUser);
 
-        res.status(200).json(newUser);
+    } catch (error: any) {
+        if (error instanceof Prisma.PrismaClientValidationError) {
+                return next(new AppError(400, JSON.stringify({
+                    status: 'error',
+                    message: 'Input Passed is not defined',
+                    // errors: error.message, 
+                })));
+        }
 
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        next(error);
+    }
+};
+
+
+// Delete User and Update DeletedUsers Table.
+
+export const deleteUserHandler = async (
+    req: Request<{}, {}, UpdateUserInput>,
+    res: Response,
+    next: NextFunction,
+) => {
+
+    try {
+        const { id, name, email,image, ...info} = res.locals.user;
+        const deleteDate = new Date(getLocalTime());
+        await createDeleteService({
+            deletedAt:deleteDate,
+            originalId:id,
+            name,
+            email,
+            image,
+        });
+
+        try {
+            await deleteUserService({id});
+                try {
+                    await redisClient.del(id);
+                    clearCookies(res);
+                    
+                } catch (error) {
+                    next(error);
+                    
+                }
+            res.status(200).json({
+                status: 'success',
+                message:"User was Deleted Successfully!"
+            });
+            
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'There was an error Deleting User',
+            });
+            
+        }
+
+
+    } catch (error:any) {
+        next(error);  
     }
 }
-// Delelete User
-/**
- * TODO: const deleteUser = async(req,res) => {
- *  const token = req.cookies.accessToken;
- *  if(!token) return res.status(401).send("You are not authenticated!")
- * }
- * 
- */
-
-// Delete user
