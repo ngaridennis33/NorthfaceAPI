@@ -55,7 +55,7 @@ export const deserializeUser = async (
         const session = await redisClient.get(decoded.sub);
 
         if (!session) {
-            return next(new AppError(401, `Invalid token or session has expired`));
+            return next(new AppError(401, 'Invalid token or session has expired'));
         }
 
         // Check if the user still exists

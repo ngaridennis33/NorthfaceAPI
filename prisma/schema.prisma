@@ -133,7 +133,7 @@ generator client {
     id String @id @default(uuid()) // Primary key field for the order item, using a UUID as the default value
     order Order @relation(fields: [orderId], references: [id]) // Relationship with the Order model, representing the order to which the item belongs
     orderId String // Foreign key linking to the orderId field in the Order model
-    product Product @relation(fields: [productId], references: [id]) // Relationship with the Product model, representing the product associated with the item
+    product Product @relation(fields: [productId], references: [id],onDelete: Restrict) // Relationship with the Product model, representing the product associated with the item
     productId String // Foreign key linking to the productId field in the Product model
     quantity Int // Quantity of the product included in the order item
     price Float // Price of a single unit of the product in the order item

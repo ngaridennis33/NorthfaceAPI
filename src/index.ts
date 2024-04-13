@@ -1,6 +1,6 @@
 require('dotenv').config();
 import { PrismaClient } from '@prisma/client';
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import config from 'config';
 import http from "http";
 import cookieParser from "cookie-parser";
@@ -12,6 +12,8 @@ import CategoryRouter from "./routes/category.routes";
 import AuthRouter from "./routes/auth.routes";
 import UserRouter from "./routes/user.routes";
 import validateEnv from './utils/validateEnv';
+import AppError from './utils/appError';
+import { getLocalTime } from './utils/helpers';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -27,6 +29,7 @@ async function bootstrap(){
 
     // 3. Cors
     app.use(cors({
+        origin:"http://localhost:3000",
         credentials: true,
     }))
 
@@ -55,6 +58,15 @@ async function bootstrap(){
         });
     });
 
+    // 7. Error Handling
+    app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
+        const statusCode= err.statusCode;
+        const errorMessage = err.message;
+    
+        return res.status(statusCode).json({statusCode:statusCode, status:err.status, errorMessage});
+    });
+
+
     // UNHANDLED ROUTES
     app.all("*", (req: Request, res: Response) => {
         res.status(404).json({ error: `Route ${req.originalUrl} not found` });
@@ -69,6 +81,7 @@ async function bootstrap(){
     });
 }
 
+console.log(getLocalTime())
 bootstrap()
 .catch((err) => {
     throw err;

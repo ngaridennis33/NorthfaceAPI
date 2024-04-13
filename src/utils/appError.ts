@@ -1,30 +1,25 @@
 export default class AppError extends Error {
-    // Additional properties for the custom error class
-    status: string; // Represents the status of the error ('fail' or 'error')
-    isOperational: boolean; // Indicates whether the error is operational or unexpected
+    status: string;
 
-    // Constructor for creating instances of the AppError class
-    constructor(public statusCode: number = 500, public message: string) {
-        // Call the constructor of the parent class (Error) and set the error message
+    constructor(public statusCode: number = 500, public message: string = "Internal Server Error") {
         super(message);
 
         // Determine the status based on the first digit of the statusCode
-        // If the first digit is '4', set status to 'fail'; otherwise, set it to 'error'
-        this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-
-        // Set the isOperational property to true, indicating that the error is operational
-        this.isOperational = true;
-
-        // Capture the stack trace for better debugging information
-        Error.captureStackTrace(this, this.constructor);
-    }
-
-    // Method to convert the error details to a JSON object
-    toJSON() {
-        return {
-            status: this.status,
-            statusCode: this.statusCode,
-            message: this.message,
-        };
+        switch (true) {
+            case statusCode >= 200 && statusCode < 300:
+                this.status = 'success';
+                break;
+            case statusCode >= 300 && statusCode < 400:
+                this.status = 'redirect';
+                break;
+            case statusCode >= 400 && statusCode < 500:
+                this.status = 'clientError';
+                break;
+            case statusCode >= 500 && statusCode < 600:
+                this.status = 'serverError';
+                break;
+            default:
+                this.status = 'unknown'; // Handle unknown status codes
+        }
     }
 }
