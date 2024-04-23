@@ -52,11 +52,10 @@ generator client {
     //********** Define the Session model for representing user sessions in the database *********//
     model Session {
       id               String    @id @default(uuid())
-      user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
       userId           String
-      loggedInTime     DateTime @default(now()) // Timestamp indicating when the user logged in
-      loggedOut        DateTime? @default(now()) // Default to current time when the user logs out
-      sessionDuration  Int       @default(0)     // Default session duration to 0 seconds
+      expires          DateTime
+      sessionToken     String
+      user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
     
       @@map(name: "sessions") // Set the database table name to "sessions"
     }

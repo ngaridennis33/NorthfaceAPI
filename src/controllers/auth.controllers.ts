@@ -189,11 +189,11 @@ export const loginUserHandler = async (
             const {access_token, refresh_token} = await signTokens(user);
 
             // Save the session in the DB
-            await UpdateUserSessionService({
-                user: {
-                    connect: { id: user.id }
-                },
-            });
+            // await UpdateUserSessionService({
+            //     user: {
+            //         connect: { id: user.id }
+            //     },
+            // });
 
             // Save the tokens in a cookie
             res.cookie("access_token", access_token, accessTokenCookieOptions); 
@@ -419,19 +419,19 @@ export const logoutUserHandler = async (
         const user = res.locals.user;
         await redisClient.del(user.id);
         clearCookies(res);
-        try {
-            // Update the LoggedOut Time and duration.
-            const loggedOut = getLocalTime();
-            await UpdateUserSessionService({
-                user: {
-                    connect: { id: user.id }
-                },
-                loggedOut:loggedOut,
-            });
+        // try {
+        //     // Update the LoggedOut Time and duration.
+        //     const loggedOut = getLocalTime();
+        //     await UpdateUserSessionService({
+        //         user: {
+        //             connect: { id: user.id }
+        //         },
+        //         loggedOut:loggedOut,
+        //     });
             
-        } catch (error) {
+        // } catch (error) {
             
-        }
+        // }
 
         res.status(200).json({
             status: 'success',

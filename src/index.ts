@@ -13,7 +13,6 @@ import AuthRouter from "./routes/auth.routes";
 import UserRouter from "./routes/user.routes";
 import validateEnv from './utils/validateEnv';
 import AppError from './utils/appError';
-import { getLocalTime } from './utils/helpers';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -81,7 +80,6 @@ async function bootstrap(){
     });
 }
 
-console.log(getLocalTime())
 bootstrap()
 .catch((err) => {
     throw err;
